@@ -148,10 +148,6 @@ public class ProductService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
 
-        if (productResponseList.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
-        }
-
         return new PageImpl<>(productResponseList, pageable, products.getTotalElements());
     }
 }

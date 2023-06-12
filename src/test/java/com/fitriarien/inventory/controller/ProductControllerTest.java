@@ -435,5 +435,129 @@ class ProductControllerTest {
         });
     }
 
+    @Test
+    @WithMockUser(username = "admin1")
+    void searchProductsNotFound() throws Exception {
+        UserDetails userDetails = authService.loadUserByUsername("admin1");
+        String token = jwtTokenUtil.generateToken(userDetails);
 
+        mockMvc.perform(
+                get("/api/products")
+                        .queryParam("product_name", "smartphone")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ProductResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(0, response.getData().size());
+            assertEquals(0, response.getPaging().getCurrentPage());
+            assertEquals(0, response.getPaging().getTotalPage());
+            assertEquals(10, response.getPaging().getSize());
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "admin1")
+    void searchProductsSuccess() throws Exception {
+        UserDetails userDetails = authService.loadUserByUsername("admin1");
+        String token = jwtTokenUtil.generateToken(userDetails);
+
+        User user = userRepository.findByUsername("admin1");
+        for (int i = 0; i < 100; i++) {
+            Product product = new Product();
+            product.setId(UUID.randomUUID().toString());
+            product.setProductName("Laptop " + (i+1));
+            product.setImagePath("www.example" + i + ".com");
+            product.setSellingPrice(15100000 + i*100000);
+            product.setStock(10);
+            product.setUser(user);
+            productRepository.save(product);
+        }
+
+        mockMvc.perform(
+                get("/api/products")
+                        .queryParam("product_name", "laptop")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ProductResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(10, response.getData().size());
+            assertEquals(0, response.getPaging().getCurrentPage());
+            assertEquals(10, response.getPaging().getTotalPage());
+            assertEquals(10, response.getPaging().getSize());
+        });
+
+        mockMvc.perform(
+                get("/api/products")
+                        .queryParam("product_name", "laptop")
+                        .queryParam("page", "5")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ProductResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(10, response.getData().size());
+            assertEquals(5, response.getPaging().getCurrentPage());
+            assertEquals(10, response.getPaging().getTotalPage());
+            assertEquals(10, response.getPaging().getSize());
+        });
+
+        mockMvc.perform(
+                get("/api/products")
+                        .queryParam("product_name", "laptop")
+                        .queryParam("page", "4")
+                        .queryParam("size", "20")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ProductResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(20, response.getData().size());
+            assertEquals(4, response.getPaging().getCurrentPage());
+            assertEquals(5, response.getPaging().getTotalPage());
+            assertEquals(20, response.getPaging().getSize());
+        });
+
+        mockMvc.perform(
+                get("/api/products")
+                        .queryParam("product_name", "laptop")
+                        .queryParam("page", "100")
+                        .queryParam("size", "20")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ProductResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(0, response.getData().size());
+            assertEquals(100, response.getPaging().getCurrentPage());
+            assertEquals(5, response.getPaging().getTotalPage());
+            assertEquals(20, response.getPaging().getSize());
+        });
+    }
 }

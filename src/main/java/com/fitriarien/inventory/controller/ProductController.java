@@ -76,7 +76,7 @@ public class ProductController {
             path = "/api/products",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<List<ProductResponse>> search(@RequestParam(value = "productName", required = false) String productName,
+    public WebResponse<List<ProductResponse>> search(@RequestParam(value = "product_name", required = false) String productName,
                                                      @RequestParam(value = "page", required = false, defaultValue = "0") int page,
                                                      @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
         Page<ProductResponse> productResponses = productService.search(productName, page, size);
