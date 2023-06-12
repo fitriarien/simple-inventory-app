@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitriarien.inventory.entity.User;
 import com.fitriarien.inventory.model.*;
+import com.fitriarien.inventory.repository.ProductRepository;
 import com.fitriarien.inventory.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -25,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "jwt.secret=fitriarien")
 class AuthControllerTest {
 
     @Autowired
@@ -35,6 +33,9 @@ class AuthControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -42,6 +43,7 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
+        productRepository.deleteAll();
         userRepository.deleteAll();
 
         User user = new User();
