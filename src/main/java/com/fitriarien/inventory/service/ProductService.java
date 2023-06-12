@@ -42,8 +42,13 @@ public class ProductService {
         validationService.validate(request);
 
         User user = userRepository.findByUsername(username);
+        Product product = productRepository.findByProductName(request.getProductName());
 
-        Product product = new Product();
+        if (product != null) {
+            throw new ResponseStatusException(HttpStatus.IM_USED, "Product name has been used.");
+        }
+
+        product = new Product();
         product.setId(UUID.randomUUID().toString());
         product.setImagePath(request.getImagePath());
         product.setProductName(request.getProductName());
@@ -87,6 +92,8 @@ public class ProductService {
 
     @Transactional
     public ProductResponse update(String productId, UpdateProductRequest request) {
+        validationService.validate(request);
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 

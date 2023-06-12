@@ -17,6 +17,7 @@ public class UpdateProductRequest {
     @Size(max = 300)
     private String imagePath;
 
+    @NotBlank
     @Size(max = 100)
     private String productName;
 
