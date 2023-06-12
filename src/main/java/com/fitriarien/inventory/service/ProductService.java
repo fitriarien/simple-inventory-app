@@ -83,6 +83,10 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productRepository.findAll(pageable);
 
+        if (products.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No data");
+        }
+
         List<ProductResponse> productResponseList = products.getContent().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

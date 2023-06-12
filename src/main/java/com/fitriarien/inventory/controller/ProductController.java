@@ -36,7 +36,7 @@ public class ProductController {
     }
 
     @GetMapping(
-            path = "/api/products/all",
+            path = "/api/products/list",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public WebResponse<List<ProductResponse>> list(@RequestParam(value = "page", required = false, defaultValue = "0") int page,

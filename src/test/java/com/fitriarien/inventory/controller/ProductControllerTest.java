@@ -25,6 +25,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -214,6 +215,59 @@ class ProductControllerTest {
             assertEquals(product.getImagePath(), response.getData().getImagePath());
             assertEquals(product.getSellingPrice(), response.getData().getSellingPrice());
             assertEquals(product.getStock(), response.getData().getStock());
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "admin1")
+    void getAllProductsEmpty() throws Exception {
+        UserDetails userDetails = authService.loadUserByUsername("admin1");
+        String token = jwtTokenUtil.generateToken(userDetails);
+
+        mockMvc.perform(
+                get("/api/products/list")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isNoContent()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "admin1")
+    void getAllProductsSuccess() throws Exception {
+        UserDetails userDetails = authService.loadUserByUsername("admin1");
+        String token = jwtTokenUtil.generateToken(userDetails);
+
+        User user = userRepository.findByUsername("admin1");
+        for (int i = 0; i < 10; i++) {
+            Product product = new Product();
+            product.setId(UUID.randomUUID().toString());
+            product.setProductName("Laptop " + i);
+            product.setImagePath("www.example" + i + ".com");
+            product.setSellingPrice(15000000 + i*100000);
+            product.setStock(10);
+            product.setUser(user);
+            productRepository.save(product);
+        }
+
+        mockMvc.perform(
+                get("/api/products/list")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        ).andExpect(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<List<ProductResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+            assertNull(response.getErrors());
+            assertEquals(10, response.getData().size());
         });
     }
 
