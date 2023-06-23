@@ -12,6 +12,8 @@ import com.fitriarien.inventory.model.WebResponse;
 import com.fitriarien.inventory.repository.ProductRepository;
 import com.fitriarien.inventory.repository.UserRepository;
 import com.fitriarien.inventory.service.AuthService;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +72,12 @@ class ProductControllerTest {
         user.setPassword(passwordEncoder.encode("rahasia"));
         user.setName("Admin 1");
         userRepository.save(user);
+    }
+
+    @AfterEach
+    void finish() {
+        productRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
